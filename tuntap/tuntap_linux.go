@@ -20,7 +20,7 @@ type TapIf struct {
 }
 
 func tuntapdev() (*os.File, error) {
-	return os.OpenFile("/dev/net/tun", O_RDWR, 0600)
+	return os.OpenFile("/dev/net/tun", unix.O_RDWR, 0600)
 }
 
 func createTap(n *netif.NetIf_Flags) (t *TapIf, err error) {
@@ -29,13 +29,13 @@ func createTap(n *netif.NetIf_Flags) (t *TapIf, err error) {
 	if err != nil {
 		return
 	}
-	err = ioctl.Ioctl(fd.Fd(), unix.TUNSETIFF, r)
+	err = ioctl.Ioctl(int(fd.Fd()), unix.TUNSETIFF, n)
 	if err != nil {
 		fd.Close() // don't leak a device if we can't configure it
 		return
 	}
 	t = &TapIf{fp: fd}
-	t.Name = r.Name[:bytes.IndexByte(r.Name, 0)]
+	t.Name = string(n.Name[:bytes.IndexByte(n.Name[:], 0)])
 	return
 }
 

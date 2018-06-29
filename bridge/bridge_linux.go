@@ -15,7 +15,7 @@ func (b *Bridge) Destroy() error {
 }
 
 // DestroyByName requests the OS remove a named bridge interface.
-func DestroyByName(name String) (err error) {
+func DestroyByName(name string) (err error) {
 	var brnam [unix.IFNAMSIZ]byte
 	copy(brnam[:], name)
 	s := netif.SocketFd()
@@ -25,7 +25,7 @@ func DestroyByName(name String) (err error) {
 }
 
 // Create requests the OS create a named bridge interface.
-func Create(name String) (b *Bridge, err error) {
+func Create(name string) (b *Bridge, err error) {
 	var brnam [unix.IFNAMSIZ]byte
 	copy(brnam[:], name)
 	s := netif.SocketFd()
@@ -38,10 +38,10 @@ func Create(name String) (b *Bridge, err error) {
 	return
 }
 
-func (b *Bridge) AddInterface(ifname String) (err error) {
+func (b *Bridge) AddInterface(ifname string) (err error) {
 	// stub
 }
 
-func (b *Bridge) RemoveInterface(ifname String) (err error) {
+func (b *Bridge) RemoveInterface(ifname string) (err error) {
 	// stub
 }
