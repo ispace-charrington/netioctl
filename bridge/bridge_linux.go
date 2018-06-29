@@ -40,8 +40,10 @@ func Create(name string) (b *Bridge, err error) {
 
 func (b *Bridge) AddInterface(ifname string) (err error) {
 	// stub
+	return
 }
 
 func (b *Bridge) RemoveInterface(ifname string) (err error) {
 	// stub
+	return
 }

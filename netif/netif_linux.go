@@ -25,6 +25,7 @@ func SocketFd() (fd int) {
 	if err != nil {
 		panic(err)
 	}
+	return
 }
 
 // SocketClose is a convenience method to clean up a socket file descriptor

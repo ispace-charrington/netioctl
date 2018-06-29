@@ -64,23 +64,28 @@ func (t *TapIf) GetHWAddress() (*net.HardwareAddr, error) {
 	// https://golang.org/pkg/net/#HardwareAddr
 	// https://github.com/torvalds/linux/blob/fd3a88625844907151737fc3b4201676effa6d27/drivers/net/tap.c#L1091
 	// stub
+	return nil, nil
 }
 
 func (t *TapIf) SetHWAddress(a *net.HardwareAddr) error {
 	// https://github.com/torvalds/linux/blob/fd3a88625844907151737fc3b4201676effa6d27/drivers/net/tap.c#L1108
 	// stub
+	return nil
 }
 
 // https://golang.org/pkg/io/#ReadWriteCloser ...
 
 func (t *TapIf) Read(p []byte) (n int, err error) {
 	// stub
+	return
 }
 
 func (t *TapIf) Write(p []byte) (n int, err error) {
 	// stub
+	return
 }
 
 func (t *TapIf) Close() (err error) {
 	// stub
+	return
 }
