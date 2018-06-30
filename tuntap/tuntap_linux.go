@@ -96,16 +96,21 @@ func (t *TapIf) SetHWAddress(a *net.HardwareAddr) error {
 
 // Read reads ethernet frames that were "transmitted" on this
 // tap interface.
-func (t *TapIf) Read(p []byte) (n int, err error) {
-	// stub
-	return
+func (t *TapIf) Read(p []byte) (int, error) {
+	return t.fp.Read(p)
 }
 
-// Write queues ethernet frames to be "received" on this tap
-// interface.
-func (t *TapIf) Write(p []byte) (n int, err error) {
-	// stub
-	return
+// Write queues ethernet frames to be "received" on this tap interface.
+// One caveat: the tap device may require only full ethernet frames to
+// be written, not partial.
+func (t *TapIf) Write(p []byte) (int, error) {
+	// TODO consider optional buffering and framing to permit partial
+	// frames to be written across two or more requests. Unfortunately
+	// this is harder than it looks; ethernet frames aren't required to
+	// include a length and can vary. The only way to be reasonably
+	// certain is to calculate a CRC over the data until we hit an
+	// expected value. Can this have false positives?
+	return t.fp.Write(p)
 }
 
 // Close disposes the tap interface and frees any resources.
