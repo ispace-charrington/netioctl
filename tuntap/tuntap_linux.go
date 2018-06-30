@@ -54,7 +54,7 @@ func CreateTap() (*TapIf, error) {
 func CreateTapNamed(name string) (*TapIf, error) {
 	r := &netif.NetIf_Flags{Flags: unix.IFF_NO_PI | unix.IFF_TAP}
 	if len(name) > unix.IFNAMSIZ {
-		return nil, fmt.Errorf("'%s' is longer than maximum of %d", unix.IFNAMSIZ)
+		return nil, fmt.Errorf("'%s' is longer than maximum of %d", name, unix.IFNAMSIZ)
 	}
 	copy(r.Name[:], name)
 	return createTap(r)
