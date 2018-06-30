@@ -38,11 +38,15 @@ func Create(name string) (b *Bridge, err error) {
 	return
 }
 
+// AddInterface attempts to add the named interface to the
+// bridge.
 func (b *Bridge) AddInterface(ifname string) (err error) {
 	// stub
 	return
 }
 
+// RemoveInterface attempts to remove the named interface
+// from the bridge.
 func (b *Bridge) RemoveInterface(ifname string) (err error) {
 	// stub
 	return
