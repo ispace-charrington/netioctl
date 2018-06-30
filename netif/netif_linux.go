@@ -1,7 +1,12 @@
 package netif
 
-import "golang.org/x/sys/unix"
-import "github.com/ispace-charrington/netioctl/ioctl"
+import (
+	"fmt"
+	"net"
+
+	"github.com/ispace-charrington/netioctl/ioctl"
+	"golang.org/x/sys/unix"
+)
 
 // NetIf_Index is a decomposed type, representing one identity of `struct ifreq`
 // (which is a C union type - cannot be represented in Go). See `man 7 netdevice`
@@ -15,6 +20,87 @@ type NetIf_Index struct {
 type NetIf_Flags struct {
 	Name  [unix.IFNAMSIZ]byte
 	Flags int16
+}
+
+// NetIf_Sockaddr is a decomposed type, representing one identity of struct ireq
+// (which is a C union type - cannot be represented in Go). See man 7 netdevice
+type NetIf_Sockaddr struct {
+	Name     [unix.IFNAMSIZ]byte
+	SockAddr unix.RawSockaddr
+}
+
+// NetIf represents a network interface.
+type NetIf [unix.IFNAMSIZ]byte
+
+type netifFlags struct {
+	ifname [unix.IFNAMSIZ]byte
+	flags  int16
+}
+
+type netifsockaddr struct {
+	ifname [unix.IFNAMSIZ]byte
+	fam    int16
+	data   [14]byte
+}
+
+// Up sets the interface flags "UP" and "RUNNING"
+func (n NetIf) Up() (err error) {
+	s := SocketFd()
+	defer SocketClose(s)
+	f := &netifFlags{ifname: n}
+	err = ioctl.Ioctl(s, unix.SIOCGIFFLAGS, f)
+	if err != nil {
+		return
+	}
+	f.flags = f.flags | unix.IFF_UP | unix.IFF_RUNNING
+	err = ioctl.Ioctl(s, unix.SIOCSIFFLAGS, f)
+	return
+}
+
+// Down clears the interface flags "UP" and "RUNNING"
+func (n NetIf) Down() (err error) {
+	s := SocketFd()
+	defer SocketClose(s)
+	f := &netifFlags{ifname: n}
+	err = ioctl.Ioctl(s, unix.SIOCGIFFLAGS, f)
+	if err != nil {
+		return
+	}
+	f.flags = f.flags & ^(unix.IFF_UP | unix.IFF_RUNNING)
+	err = ioctl.Ioctl(s, unix.SIOCSIFFLAGS, f)
+	return
+}
+
+// GetHWAddress returns the MAC of the interface.
+func (n NetIf) GetHWAddress() (hwa net.HardwareAddr, err error) {
+	s := SocketFd()
+	defer SocketClose(s)
+	r := &netifsockaddr{ifname: n}
+
+	err = ioctl.Ioctl(s, unix.SIOCGIFHWADDR, r)
+	if err != nil {
+		return
+	}
+
+	switch r.fam {
+	case unix.ARPHRD_ETHER:
+		hwa = r.data[:6]
+	default:
+		err = fmt.Errorf("unknown address family 0x%x", r.fam)
+	}
+	return
+}
+
+// SetHWAddress changes the MAC of the tap interface.
+func (n NetIf) SetHWAddress(hwa net.HardwareAddr) (err error) {
+	s := SocketFd()
+	defer SocketClose(s)
+	r := netifsockaddr{ifname: n}
+	// TODO - not setting family here, do we need to?
+	copy(r.data[:], hwa)
+
+	err = ioctl.Ioctl(s, unix.SIOCSIFHWADDR, r)
+	return
 }
 
 // SocketFd is a convenience method to get a socket file descriptor on which
