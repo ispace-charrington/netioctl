@@ -12,7 +12,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// TapIf represents a `tap` interface, which exchanges behaves like
+// TapIf represents a tap interface, which exchanges behaves like
 // a full Ethernet-capable network interface to userspace, but also
 // permits that network interface to be a io.ReadWriteCloser.
 type TapIf struct {
@@ -57,7 +57,7 @@ func createTap(n *netif.NetIf_Flags) (t *TapIf, err error) {
 	return
 }
 
-// CreateTap requests a new automatically named `tap` interface from
+// CreateTap requests a new automatically named tap interface from
 // the OS. This device is created with the NO_PI flag set, because
 // essentially no sane users are interested in the alternative. A
 // TapIf must be Close()d before it is GC'd or we will panic.
@@ -66,7 +66,7 @@ func CreateTap() (*TapIf, error) {
 	return createTap(r)
 }
 
-// CreateTapNamed requests a new `tap` interface from the OS, and
+// CreateTapNamed requests a new tap interface from the OS, and
 // requests that it be named with the provided string. It is otherwise
 // identical to CreateTap(). The requested name may be up to IFNAMSIZ
 // bytes, which technically can vary, but seems to be 16 everywhere.
@@ -80,7 +80,7 @@ func CreateTapNamed(name string) (*TapIf, error) {
 	return createTap(r)
 }
 
-// GetHWAddress returns the MAC of the `tap` interface.
+// GetHWAddress returns the MAC of the tap interface.
 func (t *TapIf) GetHWAddress() (*net.HardwareAddr, error) {
 	// https://golang.org/pkg/net/#HardwareAddr
 	// https://github.com/torvalds/linux/blob/fd3a88625844907151737fc3b4201676effa6d27/drivers/net/tap.c#L1091
@@ -88,7 +88,7 @@ func (t *TapIf) GetHWAddress() (*net.HardwareAddr, error) {
 	return nil, nil
 }
 
-// SetHWAddress changes the MAC of the `tap` interface.
+// SetHWAddress changes the MAC of the tap interface.
 func (t *TapIf) SetHWAddress(a *net.HardwareAddr) error {
 	// https://github.com/torvalds/linux/blob/fd3a88625844907151737fc3b4201676effa6d27/drivers/net/tap.c#L1108
 	// stub
@@ -98,20 +98,20 @@ func (t *TapIf) SetHWAddress(a *net.HardwareAddr) error {
 // https://golang.org/pkg/io/#ReadWriteCloser ...
 
 // Read reads ethernet frames that were "transmitted" on this
-// `tap` interface.
+// tap interface.
 func (t *TapIf) Read(p []byte) (n int, err error) {
 	// stub
 	return
 }
 
-// Write queues ethernet frames to be "received" on this `tap`
+// Write queues ethernet frames to be "received" on this tap
 // interface.
 func (t *TapIf) Write(p []byte) (n int, err error) {
 	// stub
 	return
 }
 
-// Close disposes the `tap` interface and frees any resources.
+// Close disposes the tap interface and frees any resources.
 func (t *TapIf) Close() (err error) {
 	// stub
 	return
