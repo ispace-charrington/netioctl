@@ -26,9 +26,6 @@ func tuntapdev() (*os.File, error) {
 }
 
 func tapdevDetectLeak(t *TapIf) {
-	if t.fp == nil {
-		return // already closed 👍
-	}
 	t.fp.Close()
 
 	if t.persistent {
@@ -112,7 +109,7 @@ func (t *TapIf) Write(p []byte) (n int, err error) {
 }
 
 // Close disposes the tap interface and frees any resources.
-func (t *TapIf) Close() (err error) {
-	// stub
-	return
+func (t *TapIf) Close() error {
+	runtime.SetFinalizer(t, nil)
+	return t.fp.Close()
 }
