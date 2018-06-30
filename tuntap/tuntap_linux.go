@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"runtime"
 
 	"github.com/ispace-charrington/netioctl/ioctl"
 	"github.com/ispace-charrington/netioctl/netif"
@@ -15,12 +16,28 @@ import (
 // a full Ethernet-capable network interface to userspace, but also
 // permits that network interface to be a io.ReadWriteCloser.
 type TapIf struct {
-	Name string
-	fp   *os.File
+	Name       string
+	persistent bool
+	fp         *os.File
 }
 
 func tuntapdev() (*os.File, error) {
 	return os.OpenFile("/dev/net/tun", unix.O_RDWR, 0600)
+}
+
+func tapdevDetectLeak(t *TapIf) {
+	if t.fp == nil {
+		return // already closed 👍
+	}
+	t.fp.Close()
+
+	if t.persistent {
+		// A persistent interface doesn't need to be explicitly closed
+		// since they'll continue to exist anyway, so don't crash, but
+		// do ridicule and shame
+		return
+	}
+	panic(fmt.Errorf("non-persistent TapIf leaked (Name=%q)", t.Name))
 }
 
 func createTap(n *netif.NetIf_Flags) (t *TapIf, err error) {
@@ -36,12 +53,14 @@ func createTap(n *netif.NetIf_Flags) (t *TapIf, err error) {
 	}
 	t = &TapIf{fp: fd}
 	t.Name = string(n.Name[:bytes.IndexByte(n.Name[:], 0)])
+	runtime.SetFinalizer(t, tapdevDetectLeak)
 	return
 }
 
 // CreateTap requests a new automatically named `tap` interface from
 // the OS. This device is created with the NO_PI flag set, because
-// essentially no sane users are interested in the alternative.
+// essentially no sane users are interested in the alternative. A
+// TapIf must be Close()d before it is GC'd or we will panic.
 func CreateTap() (*TapIf, error) {
 	r := &netif.NetIf_Flags{Flags: unix.IFF_NO_PI | unix.IFF_TAP}
 	return createTap(r)
@@ -51,6 +70,7 @@ func CreateTap() (*TapIf, error) {
 // requests that it be named with the provided string. It is otherwise
 // identical to CreateTap(). The requested name may be up to IFNAMSIZ
 // bytes, which technically can vary, but seems to be 16 everywhere.
+// A TapIf must be Close()d before it is GC'd or we will panic.
 func CreateTapNamed(name string) (*TapIf, error) {
 	r := &netif.NetIf_Flags{Flags: unix.IFF_NO_PI | unix.IFF_TAP}
 	if len(name) > unix.IFNAMSIZ {
