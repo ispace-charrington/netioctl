@@ -43,7 +43,7 @@ func createTap(n *netif.NetIf_Flags) (t *TapIf, err error) {
 	if err != nil {
 		return
 	}
-	err = ioctl.Ioctl(int(fd.Fd()), unix.TUNSETIFF, n)
+	err = ioctl.Ioctl(fd.Fd(), unix.TUNSETIFF, n)
 	if err != nil {
 		fd.Close() // don't leak a device if we can't configure it
 		return

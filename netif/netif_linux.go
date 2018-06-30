@@ -20,19 +20,20 @@ type NetIf_Flags struct {
 // SocketFd is a convenience method to get a socket file descriptor on which
 // to execute ioctls. It's implied that this call cannot fail, and if the OS
 // disagrees, we panic. A fd returned in this way must be closed by SocketClose().
-func SocketFd() (fd int) {
-	fd, err := unix.Socket(unix.AF_UNIX, unix.SOCK_DGRAM, 0)
+func SocketFd() (fd uintptr) {
+	n, err := unix.Socket(unix.AF_UNIX, unix.SOCK_DGRAM, 0)
 	if err != nil {
 		panic(err)
 	}
+	fd = uintptr(n)
 	return
 }
 
 // SocketClose is a convenience method to clean up a socket file descriptor
 // after use. It's implied that this call cannot fail, and if the OS
 // disagrees, we panic.
-func SocketClose(fd int) {
-	err := unix.Close(fd)
+func SocketClose(fd uintptr) {
+	err := unix.Close(int(fd))
 	if err != nil {
 		panic(err)
 	}
