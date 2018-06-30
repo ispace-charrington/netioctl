@@ -41,13 +41,27 @@ func Create(name string) (b *Bridge, err error) {
 // AddInterface attempts to add the named interface to the
 // bridge.
 func (b *Bridge) AddInterface(ifname string) (err error) {
-	// stub
+	n, err := netif.GetByName(ifname)
+	if err != nil {
+		return
+	}
+	copy(n.Name[:], b.Name)
+	s := netif.SocketFd()
+	defer netif.SocketClose(s)
+	err = ioctl.Ioctl(s, unix.SIOCBRADDIF, n)
 	return
 }
 
 // RemoveInterface attempts to remove the named interface
 // from the bridge.
 func (b *Bridge) RemoveInterface(ifname string) (err error) {
-	// stub
+	n, err := netif.GetByName(ifname)
+	if err != nil {
+		return
+	}
+	copy(n.Name[:], b.Name)
+	s := netif.SocketFd()
+	defer netif.SocketClose(s)
+	err = ioctl.Ioctl(s, unix.SIOCBRDELIF, n)
 	return
 }
