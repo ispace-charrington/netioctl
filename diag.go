@@ -3,19 +3,22 @@ package main
 import "fmt"
 import "os"
 import "io"
+import "time"
 import "github.com/ispace-charrington/netioctl/bridge"
 import "github.com/ispace-charrington/netioctl/tuntap"
 
 func must(msg string, err error) {
 	if err == nil {
+		fmt.Fprintf(os.Stderr, "ok: %s\n", msg)
 		return
 	}
 	fmt.Fprintf(os.Stderr, "failed to %s: %v\n", msg, err)
 	panic(err)
 }
 
-func dump(label string, r io.Reader, abort chan bool) {
-	defer func() { abort <- true }()
+func dump(label string, r io.Reader) {
+	defer fmt.Fprintf(os.Stderr, "%s dump returning\n", label)
+
 	k := make([]byte, 1550)
 	for {
 		n, err := r.Read(k)
@@ -39,34 +42,40 @@ func main() {
 	b, err := bridge.Create("testbr0")
 	must("create a new bridge", err)
 	fmt.Fprintf(os.Stderr, "b=%+v\n", b)
+	defer must("destroy bridge", b.Destroy())
 
 	t1, err := tuntap.CreateTap()
 	must("create first tap interface", err)
 	fmt.Fprintf(os.Stderr, "t1=%+v\n", t1)
-	defer t1.Close()
+	defer must("close t1", t1.Close())
 
 	t2, err := tuntap.CreateTap()
 	must("create second tap interface", err)
 	fmt.Fprintf(os.Stderr, "t2=%+v\n", t2)
-	defer t2.Close()
+	defer must("close t2", t2.Close())
 
 	err = b.Add(t1.NetIf())
 	must("add t1 to bridge", err)
+	defer must("remove t1 from bridge", b.Remove(t1.NetIf()))
 
 	err = b.Add(t2.NetIf())
 	must("add t2 to bridge", err)
+	defer must("remove t2 from bridge", b.Remove(t2.NetIf()))
 
 	err = t1.NetIf().Up()
 	must("bring up interface t1", err)
+	defer must("shut down t1", t1.NetIf().Down())
 
 	err = t2.NetIf().Up()
 	must("bring up interface t2", err)
+	defer must("shut down t2", t2.NetIf().Down())
 
 	err = b.NetIf().Up()
 	must("bring up bridge interface", err)
+	defer must("shut down bridge", b.NetIf().Down())
 
-	abort := make(chan bool)
-	go dump("t1", t1, abort)
-	go dump("t2", t2, abort)
-	<-abort
+	go dump("t1", t1)
+	go dump("t2", t2)
+	time.Sleep(30 * time.Second)
+
 }
