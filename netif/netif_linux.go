@@ -43,6 +43,11 @@ type netifsockaddr struct {
 	data   [14]byte
 }
 
+type netifindex struct {
+	ifname [unix.IFNAMSIZ]byte
+	index  int32
+}
+
 // Up sets the interface flags "UP" and "RUNNING"
 func (n NetIf) Up() (err error) {
 	s := SocketFd()
@@ -91,7 +96,7 @@ func (n NetIf) GetHWAddress() (hwa net.HardwareAddr, err error) {
 	return
 }
 
-// SetHWAddress changes the MAC of the tap interface.
+// SetHWAddress changes the MAC of the interface.
 func (n NetIf) SetHWAddress(hwa net.HardwareAddr) (err error) {
 	s := SocketFd()
 	defer SocketClose(s)
@@ -100,6 +105,19 @@ func (n NetIf) SetHWAddress(hwa net.HardwareAddr) (err error) {
 	copy(r.data[:], hwa)
 
 	err = ioctl.Ioctl(s, unix.SIOCSIFHWADDR, r)
+	return
+}
+
+// Index gets the index of the interface.
+func (n NetIf) Index() (idx int32, err error) {
+	s := SocketFd()
+	defer SocketClose(s)
+	r := netifindex{ifname: n}
+	err = ioctl.Ioctl(s, unix.SIOCGIFINDEX, &r)
+	if err != nil {
+		return
+	}
+	idx = r.index
 	return
 }
 
