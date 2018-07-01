@@ -44,12 +44,12 @@ func main() {
 	fmt.Fprintf(os.Stderr, "b=%+v\n", b)
 	defer must("destroy bridge", b.Destroy())
 
-	t1, err := tuntap.CreateTap()
+	t1, err := tuntap.CreateTapNamed("tap_t1")
 	must("create first tap interface", err)
 	fmt.Fprintf(os.Stderr, "t1=%+v\n", t1)
 	defer must("close t1", t1.Close())
 
-	t2, err := tuntap.CreateTap()
+	t2, err := tuntap.CreateTapNamed("tap_t2")
 	must("create second tap interface", err)
 	fmt.Fprintf(os.Stderr, "t2=%+v\n", t2)
 	defer must("close t2", t2.Close())
