@@ -102,7 +102,7 @@ func (t *TapIf) Close() error {
 }
 
 // NetIf returns a NetIf for the tap interface. For example:
-//    t := tuntap.CreateTap("mytap0")
+//    t := tuntap.CreateTap()
 //    t.NetIf().Up()
 func (t *TapIf) NetIf() (n netif.NetIf) {
 	copy(n[:], t.Name)
