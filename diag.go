@@ -16,7 +16,7 @@ func must(msg string, err error) {
 
 func dump(label string, r io.Reader, abort chan bool) {
 	defer func() { abort <- true }()
-	k := make([]byte, 0, 1550)
+	k := make([]byte, 1550)
 	for {
 		n, err := r.Read(k)
 		if err != nil {
