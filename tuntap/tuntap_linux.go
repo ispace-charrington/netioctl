@@ -101,6 +101,16 @@ func (t *TapIf) Close() error {
 	return t.fp.Close()
 }
 
+// SetPersistent allows the interface to persist after being closed.
+func (t *TapIf) SetPersistent(p bool) error {
+	t.persistent = p
+	var f uint
+	if p {
+		f = 1
+	}
+	return ioctl.Ioctl(t.fp.Fd(), unix.TUNSETPERSIST, &f)
+}
+
 // NetIf returns a NetIf for the tap interface. For example:
 //    t := tuntap.CreateTap()
 //    t.NetIf().Up()
